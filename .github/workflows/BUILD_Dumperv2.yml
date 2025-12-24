@@ -11,7 +11,9 @@ on:
       - '.github/*'
       - '.github/*_TEMPLATE/**'
       - '*.md'
-
+  workflow_dispatch:
+    # allows manual trigger
+    
 jobs:
   build:
     name: NET on ${{ matrix.runs-on }} (${{ matrix.configuration }})

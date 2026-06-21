@@ -1,0 +1,52 @@
+name: Uplay Apps Build DenuvoTicket
+
+on:
+  push:
+    paths-ignore:
+      - '.github/**'
+      - '*.md'
+  pull_request:
+    paths-ignore:
+      - '.github/**'
+      - '*.md'
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Переименовали runs-on в target_os, чтобы не конфликтовало с системным полем
+    name: Build on ${{ matrix.target_os }}
+    runs-on: ${{ matrix.target_os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        target_os: [windows-latest, ubuntu-latest]
+        configuration: [Release]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        # Важно: путь должен быть верным относительно корня репозитория
+        run: dotnet restore DenuvoTicket/DenuvoTicket.csproj
+
+      - name: Publish app
+        # ИСПРАВЛЕНИЕ: пишем в ./Output (внутри проекта), а не ../Output
+        run: dotnet publish DenuvoTicket/DenuvoTicket.csproj -c ${{ matrix.configuration }} --property:PublishDir=./Output
+
+      - name: Show what we have (DEBUG STEP)
+        # Этот шаг покажет, что реально лежит в папке Output. Очень полезно для отладки!
+        run: ls -la ./Output || dir .\Output
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DenuvoTicket-${{ matrix.target_os }}
+          path: ./Output
+          if-no-files-found: warn # Изменил на warn, чтобы ты видел файлы, даже если что-то пошло не так

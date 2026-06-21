@@ -1,4 +1,4 @@
-name: Uplay Apps Build DenuvoTicket
+1name: Uplay Apps Build DenuvoTicket
 
 on:
   push:
